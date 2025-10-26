@@ -1,0 +1,47 @@
+import React from 'react';
+import Sidebar from '../components/Sidebar.js';
+import SummaryCard from '../components/SummaryCard.js';
+import RecentActivity from '../components/RecentActivity.js';
+import axios from 'axios';
+
+export default function Dashboard(){
+  const [state, setState] = React.useState({
+    products: null,
+    images: null,
+    activities: []
+  });
+
+  React.useEffect(function(){
+    axios.get('/api/products').then(function(r){ setState(function(s){ return Object.assign({}, s, { products: r.data }); }); }).catch(function(){ setState(function(s){ return Object.assign({}, s, { products: [] }); }); });
+    axios.get('/api/prodimages').then(function(r){ setState(function(s){ return Object.assign({}, s, { images: r.data }); }); }).catch(function(){ setState(function(s){ return Object.assign({}, s, { images: [] }); }); });
+    axios.get('/api/activities').then(function(r){ setState(function(s){ return Object.assign({}, s, { activities: r.data }); }); }).catch(function(){ setState(function(s){ return Object.assign({}, s, { activities: [] }); }); });
+  },[]);
+
+  var products = state.products;
+  var images = state.images;
+  var activities = state.activities || [];
+
+  var total = (products ? products.length : null);
+  var active = (products ? products.filter(function(p){ return p.Status === 'Active'; }).length : null);
+  var inactive = (products ? products.filter(function(p){ return p.Status === 'Inactive'; }).length : null);
+  var imagesCount = (images ? images.length : null);
+  var storageUsed = (images ? (images.length * 1.2).toFixed(1) : null);
+
+  return React.createElement('div', { className: 'min-h-screen flex bg-[#071029] text-white' },
+    React.createElement(Sidebar),
+    React.createElement('main', { className: 'flex-1 p-6' },
+      React.createElement('h1', { className: 'text-3xl mb-6' }, 'Dashboard'),
+      React.createElement('section', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8' },
+        React.createElement(SummaryCard, { icon: 'Package', title: 'Total Jewellery', value: total }),
+        React.createElement(SummaryCard, { icon: 'CheckCircle', title: 'Total Active Jewellery', value: active }),
+        React.createElement(SummaryCard, { icon: 'XCircle', title: 'Jewellery not in use', value: inactive }),
+        React.createElement(SummaryCard, { icon: 'Image', title: 'Jewellery Images/360°', value: imagesCount }),
+        React.createElement(SummaryCard, { icon: 'HardDrive', title: 'Storage Used (MB)', value: storageUsed })
+      ),
+      React.createElement('section', null,
+        React.createElement('h2', { className: 'text-xl mb-4' }, 'Recent Activity'),
+        React.createElement(RecentActivity, { items: activities })
+      )
+    )
+  );
+}

@@ -1,0 +1,14 @@
+import React from 'react';
+
+export default function HelpPage() {
+  return React.createElement(
+    'div',
+    { className: 'min-h-screen p-6 bg-[#071029] text-white' },
+    React.createElement('h1', { className: 'text-3xl mb-4' }, '❓ Help & Support'),
+    React.createElement(
+      'div',
+      { className: 'border border-yellow-900 p-4 rounded-xl bg-[#0F172A]' },
+      'If you need assistance, contact support@example.com or check documentation.'
+    )
+  );
+}

@@ -1,0 +1,278 @@
+import React from 'react';
+import Sidebar from '../components/Sidebar.js';
+import { sampleProducts } from '../data/data.js';
+import { motion } from 'framer-motion';
+
+export default function ProductsPage() {
+  const [products, setProducts] = React.useState(sampleProducts);
+  const [editingIndex, setEditingIndex] = React.useState(null);
+
+  const [form, setForm] = React.useState({
+    ProdName: 'Sample Product',
+    ProdCode: 'CODE001',
+    CategID: '101',
+    MatID: '501',
+    ProdDesc: 'Sample product description...',
+    price: 100,
+    OriginalPrice: 150,
+    Rating: 4.5,
+    ReviewCount: 10,
+    prodsize: 'M',
+    prodcolor: 'Gold',
+    ProdColorCode: '#FFD700',
+    Status: 'Active'
+  });
+
+  function handleChange(e) {
+    setForm(Object.assign({}, form, { [e.target.name]: e.target.value }));
+  }
+
+  function handleNumberChange(key, delta) {
+    setForm(Object.assign({}, form, { [key]: parseFloat(form[key] || 0) + delta }));
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.ProdName || !form.ProdCode) {
+      alert('Product Name and Code are required.');
+      return;
+    }
+    const payload = Object.assign({}, form, {
+      ProdID: editingIndex !== null
+        ? products[editingIndex].ProdID
+        : (Math.random() * 100000).toFixed(0),
+      CreatedAt: new Date().toISOString(),
+      UpdatedAt: new Date().toISOString()
+    });
+    let updated;
+    if (editingIndex !== null) {
+      updated = products.slice();
+      updated[editingIndex] = payload;
+      setProducts(updated);
+      setEditingIndex(null);
+      alert('? Product updated successfully');
+    } else {
+      updated = [payload].concat(products).slice(0, 10);
+      setProducts(updated);
+      alert('? Product added successfully');
+    }
+    resetForm();
+  }
+
+  function handleEdit(index) {
+    setForm(Object.assign({}, products[index]));
+    setEditingIndex(index);
+  }
+
+  function handleDelete(index) {
+    if (confirm('Are you sure you want to delete this product?')) {
+      const updated = products.slice();
+      updated.splice(index, 1);
+      setProducts(updated);
+    }
+  }
+
+  function resetForm() {
+    setForm({
+      ProdName: 'Sample Product',
+      ProdCode: 'CODE001',
+      CategID: '101',
+      MatID: '501',
+      ProdDesc: 'Sample product description...',
+      price: 100,
+      OriginalPrice: 150,
+      Rating: 4.5,
+      ReviewCount: 10,
+      prodsize: 'M',
+      prodcolor: 'Gold',
+      ProdColorCode: '#FFD700',
+      Status: 'Active'
+    });
+  }
+
+  return React.createElement(
+    'div',
+    { className: 'flex min-h-screen bg-[#071029] text-white' },
+
+    // Sidebar
+    React.createElement(Sidebar),
+
+    // Main content area
+    React.createElement('div', { className: 'flex-1 p-6 overflow-y-auto' },
+
+      React.createElement('h1', { className: 'text-3xl mb-6 font-semibold text-yellow-400' },
+        'Products Management'
+      ),
+
+      // Add/Edit Form
+      React.createElement(
+        motion.form,
+        {
+          onSubmit: handleSubmit,
+          className:
+            'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 border border-yellow-800 rounded-2xl p-4 bg-[#0F172A]',
+          initial: { opacity: 0 },
+          animate: { opacity: 1 }
+        },
+        // Text fields
+        ['ProdName', 'ProdCode', 'CategID', 'MatID', 'prodsize', 'prodcolor', 'ProdColorCode', 'Status'].map(function (key) {
+          return React.createElement(
+            'div',
+            { key, className: 'flex flex-col' },
+            React.createElement('label', { className: 'text-sm opacity-70 mb-1' }, key),
+            React.createElement('input', {
+              name: key,
+              value: form[key],
+              onChange: handleChange,
+              placeholder: key,
+              className: 'p-2 rounded bg-[#071029] border border-yellow-900 text-white'
+            })
+          );
+        }),
+
+        // Numeric steppers
+        ['price', 'OriginalPrice', 'Rating', 'ReviewCount'].map(function (key) {
+          return React.createElement(
+            'div',
+            { key, className: 'flex flex-col' },
+            React.createElement('label', { className: 'text-sm opacity-70 mb-1' }, key + ' (USD)'),
+            React.createElement(
+              'div',
+              { className: 'flex items-center' },
+              React.createElement(
+                'button',
+                {
+                  type: 'button',
+                  onClick: function () { handleNumberChange(key, -1); },
+                  className: 'px-3 py-1 bg-yellow-700 rounded-l hover:bg-yellow-600'
+                },
+                '-'
+              ),
+              React.createElement('input', {
+                name: key,
+                type: 'number',
+                step: '0.1',
+                value: form[key],
+                onChange: handleChange,
+                className:
+                  'w-full text-center p-2 bg-[#071029] border-t border-b border-yellow-900 text-white'
+              }),
+              React.createElement(
+                'button',
+                {
+                  type: 'button',
+                  onClick: function () { handleNumberChange(key, 1); },
+                  className: 'px-3 py-1 bg-yellow-700 rounded-r hover:bg-yellow-600'
+                },
+                '+'
+              )
+            )
+          );
+        }),
+
+        // Multiline Description
+        React.createElement(
+          'div',
+          { className: 'col-span-full flex flex-col' },
+          React.createElement('label', { className: 'text-sm opacity-70 mb-1' }, 'ProdDesc'),
+          React.createElement('textarea', {
+            name: 'ProdDesc',
+            value: form.ProdDesc,
+            onChange: handleChange,
+            rows: 3,
+            className:
+              'p-2 rounded bg-[#071029] border border-yellow-900 text-white resize-none'
+          })
+        ),
+
+        // Buttons
+        React.createElement(
+          'div',
+          { className: 'col-span-full text-right mt-4' },
+          React.createElement(
+            'button',
+            {
+              type: 'submit',
+              className:
+                'px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold rounded hover:shadow-lg mr-2'
+            },
+            editingIndex !== null ? 'Update Product' : 'Add Product'
+          ),
+          React.createElement(
+            'button',
+            {
+              type: 'button',
+              onClick: resetForm,
+              className:
+                'px-4 py-2 border border-yellow-700 text-yellow-400 rounded hover:bg-[#112233]'
+            },
+            'Reset'
+          )
+        )
+      ),
+
+      // Product List
+      React.createElement(
+        'table',
+        { className: 'min-w-full border border-yellow-900 text-sm' },
+        React.createElement(
+          'thead',
+          { className: 'bg-[#0F172A]' },
+          React.createElement(
+            'tr',
+            null,
+            ['ProdName', 'ProdCode', 'price', 'OriginalPrice', 'discount%', 'Status', 'Actions'].map(function (h) {
+              return React.createElement(
+                'th',
+                { key: h, className: 'p-2 border-b border-yellow-900 text-left' },
+                h
+              );
+            })
+          )
+        ),
+        React.createElement(
+          'tbody',
+          null,
+          products.map(function (p, i) {
+            const discount =
+              p.OriginalPrice && p.price
+                ? (((p.OriginalPrice - p.price) / p.OriginalPrice) * 100).toFixed(2)
+                : '-';
+            return React.createElement(
+              'tr',
+              { key: i, className: 'hover:bg-[#112233]' },
+              React.createElement('td', { className: 'p-2 border-b border-yellow-900' }, p.ProdName),
+              React.createElement('td', { className: 'p-2 border-b border-yellow-900' }, p.ProdCode),
+              React.createElement('td', { className: 'p-2 border-b border-yellow-900' }, `$${p.price}`),
+              React.createElement('td', { className: 'p-2 border-b border-yellow-900' }, `$${p.OriginalPrice}`),
+              React.createElement('td', { className: 'p-2 border-b border-yellow-900' }, discount + '%'),
+              React.createElement('td', { className: 'p-2 border-b border-yellow-900' }, p.Status),
+              React.createElement(
+                'td',
+                { className: 'p-2 border-b border-yellow-900 flex gap-2' },
+                React.createElement(
+                  'button',
+                  {
+                    className:
+                      'px-2 py-1 bg-yellow-600 text-black rounded hover:bg-yellow-500',
+                    onClick: function () { handleEdit(i); }
+                  },
+                  'Edit'
+                ),
+                React.createElement(
+                  'button',
+                  {
+                    className:
+                      'px-2 py-1 bg-red-600 text-white rounded hover:bg-red-500',
+                    onClick: function () { handleDelete(i); }
+                  },
+                  'Delete'
+                )
+              )
+            );
+          })
+        )
+      )
+    )
+  );
+}

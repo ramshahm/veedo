@@ -1,0 +1,14 @@
+module.exports = {
+  content: [
+    "./index.html",
+    "./src/**/*.{js}"
+  ],
+  theme: {
+    extend: {
+      colors: {
+        darkgold: '#D8A600'
+      }
+    }
+  },
+  plugins: [],
+};
